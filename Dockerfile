@@ -1,33 +1,37 @@
-# Imagen base oficial con PHP, Composer, y extensiones necesarias
+# Imagen base con PHP 8.2 y extensiones necesarias
 FROM php:8.2-cli
 
-# Instalar dependencias del sistema
+# Instalar extensiones necesarias y Composer
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     unzip \
+    zip \
     libpq-dev \
     libzip-dev \
-    zip \
-    && docker-php-ext-install pdo_pgsql zip
+    && docker-php-ext-install pdo_pgsql zip \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Instalar Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Establecer directorio de trabajo
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copiar todos los archivos al contenedor
+# Copiar todos los archivos del proyecto al contenedor
 COPY . .
 
-# Dar permisos de ejecución al build.sh
-RUN chmod +x build.sh
+# Instalar dependencias ANTES de ejecutar cualquier comando artisan
+RUN composer install --no-dev --optimize-autoloader
 
-# Ejecutar el script de instalación
-RUN ./build.sh
+# Copiar .env si no existe (por seguridad)
+RUN if [ ! -f ".env" ]; then cp .env.example .env; fi
 
-# Exponer puerto para Laravel
+# Generar clave de aplicación
+RUN php artisan key:generate
+
+# Migrar base de datos
+RUN php artisan migrate --force
+
+# Exponer el puerto 10000
 EXPOSE 10000
 
-# Comando de arranque
+# Comando que inicia Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
