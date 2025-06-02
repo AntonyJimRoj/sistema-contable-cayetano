@@ -20,7 +20,10 @@ use App\Http\Controllers\{
     TwoFactorController
 };
 
-Route::get('/', fn () => view('welcome'));
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
 
 // Rutas protegidas por autenticación
 Route::middleware('auth')->group(function () {
