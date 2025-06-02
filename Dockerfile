@@ -1,7 +1,7 @@
-# Imagen base de PHP con CLI
+# Imagen base
 FROM php:8.2-cli
 
-# Instalar dependencias del sistema y extensiones necesarias
+# Instalar extensiones y librerías necesarias
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -13,16 +13,17 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_pgsql zip gd
-
-# Instalar Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    && docker-php-ext-install zip gd \
+    && docker-php-ext-install pdo pdo_pgsql
 
 # Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar todos los archivos del proyecto al contenedor
+# Copiar archivos del proyecto
 COPY . .
+
+# Instalar Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Instalar dependencias de Laravel
 RUN composer install --no-dev --optimize-autoloader
@@ -39,5 +40,5 @@ RUN php artisan migrate --force
 # Exponer el puerto que usará Laravel
 EXPOSE 10000
 
-# Comando que inicia Laravel
+# Comando final
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
