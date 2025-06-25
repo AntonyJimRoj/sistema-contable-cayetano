@@ -40,6 +40,10 @@ RUN if [ ! -f ".env" ]; then cp .env.example .env; fi
 # Generar APP_KEY
 RUN php artisan key:generate
 
+# ⚠️ IMPORTANTE: Enlazar storage y asegurarnos de que los assets estén disponibles
+RUN php artisan storage:link \
+ && ls -la public/build # 👈 Verifica que este directorio exista tras la compilación
+
 # Exponer el puerto usado por Laravel
 EXPOSE 10000
 
