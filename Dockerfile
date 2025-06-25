@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_pgsql zip gd
 
-# Instalar Composer
+# Instalar Composer_2
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Establecer el directorio de trabajo
@@ -40,3 +40,6 @@ EXPOSE 80
 
 # Comando para iniciar Laravel usando Apache
 CMD ["apache2-foreground"]
+
+# Instalar Composer
+RUN composer install --no-dev --optimize-autoloader
