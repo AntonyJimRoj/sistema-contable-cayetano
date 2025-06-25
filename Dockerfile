@@ -1,51 +1,42 @@
-# Imagen base PHP
-FROM php:8.2-cli
+# Imagen base oficial con PHP y Composer
+FROM php:8.2-apache
 
-# Instala extensiones y herramientas necesarias
+# Activar módulos requeridos y extensiones para Laravel + PostgreSQL
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     unzip \
     zip \
-    libpq-dev \
     libzip-dev \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libonig-dev \
+    libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd zip pdo pdo_pgsql
-
-# Instalar Node.js y npm (para Vite)
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs
+    && docker-php-ext-install pdo pdo_pgsql zip gd
 
 # Instalar Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Crear y movernos al directorio de la app
-WORKDIR /app
+# Establecer el directorio de trabajo
+WORKDIR /var/www/html
 
-# Copiar todos los archivos al contenedor
+# Copiar archivos del proyecto al contenedor
 COPY . .
 
-# Instalar dependencias PHP
-RUN composer install --no-dev --optimize-autoloader
+# Dar permisos adecuados
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
-# Instalar dependencias JS y compilar assets con Vite
-RUN npm install && npm run build
+# Activar mod_rewrite de Apache
+RUN a2enmod rewrite
 
-# Copiar .env si no existe
-RUN if [ ! -f ".env" ]; then cp .env.example .env; fi
+# Copiar configuración personalizada de Apache
+COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 
-# Generar APP_KEY
-RUN php artisan key:generate
+# Puerto de salida (Render recomienda usar 0.0.0.0:10000)
+EXPOSE 80
 
-# ⚠️ IMPORTANTE: Enlazar storage y asegurarnos de que los assets estén disponibles
-RUN php artisan storage:link \
- && ls -la public/build # 👈 Verifica que este directorio exista tras la compilación
-
-# Exponer el puerto usado por Laravel
-EXPOSE 10000
-
-# Ejecutar migraciones y levantar el servidor
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
+# Comando para iniciar Laravel usando Apache
+CMD ["apache2-foreground"]
