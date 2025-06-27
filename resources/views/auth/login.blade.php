@@ -5,7 +5,7 @@
             <div class="text-center mb-8">
                 <img src="{{ asset('img/logo_CH.jpg') }}" alt="Logo Cayetano" class="mx-auto h-24 w-24 rounded-full shadow">
                 <h2 class="mt-4 text-3xl font-bold text-cayetano-blue">Iniciar Sesión</h2>
-                <p class="text-sm text-gray-600">Consorcio Educativo Superior Cayetano Heredia</p>
+                <p class="text-sm text-gray-600">Consorcio Educativo Superior Ramos</p>
             </div>
 
             <!-- Estado de sesión -->
