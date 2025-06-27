@@ -12,13 +12,38 @@ class AdminDashboardController extends Controller
 {
     public function adminDashboard()
     {
-        $estudiantes = Estudiante::count();
+        $estudiantes = $this->obtenerCantidadEstudiantes();
+        $ingresosMes = $this->obtenerIngresosDelMes();
+        $egresosMes = $this->obtenerEgresosDelMes();
+        $cajas = $this->obtenerTodasLasCajas();
 
-        $ingresosMes = Ingreso::where('fecha_pago', 'like', date('Y-m') . '%')->sum('monto');
-        $egresosMes = Egreso::where('fecha_egreso', 'like', date('Y-m') . '%')->sum('monto');
+        return view('dashboard.admin', compact(
+            'estudiantes',
+            'ingresosMes',
+            'egresosMes',
+            'cajas'
+        ));
+    }
 
-        $cajas = Caja::all();
+    private function obtenerCantidadEstudiantes()
+    {
+        return Estudiante::count();
+    }
 
-        return view('dashboard.admin', compact('estudiantes', 'ingresosMes', 'egresosMes', 'cajas'));
+    private function obtenerIngresosDelMes()
+    {
+        $mesActual = date('Y-m');
+        return Ingreso::where('fecha_pago', 'like', $mesActual . '%')->sum('monto');
+    }
+
+    private function obtenerEgresosDelMes()
+    {
+        $mesActual = date('Y-m');
+        return Egreso::where('fecha_egreso', 'like', $mesActual . '%')->sum('monto');
+    }
+
+    private function obtenerTodasLasCajas()
+    {
+        return Caja::all();
     }
 }
