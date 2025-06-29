@@ -45,6 +45,11 @@
             </div>
         </form>
 
+        <a href="{{ route('egresos.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
+            + Registrar Egreso
+        </a>
+
+
         <table class="min-w-full bg-white border border-gray-200">
             <thead>
                 <tr>
